@@ -6,11 +6,11 @@ var Service, Characteristic;
 module.exports = function(homebridge) {
     Service = homebridge.hap.Service;
     Characteristic = homebridge.hap.Characteristic;
-    homebridge.registerAccessory('homebridge-minimal-websocket-lights', 'MinimalisticWebSocketLights', MinimalisticWebSocketLights);
-    console.log('Loading MinimalisticWebSocketLights accessories...');
+    homebridge.registerAccessory('homebridge-esp2866-websocket-lights', 'WebSocketLights', WebSocketLights);
+    console.log('Loading WebSocketLights accessories...');
 };
 
-function MinimalisticWebSocketLights(log, config) {
+function WebSocketLights(log, config) {
     this.log = log;
 
     this.name = config.ip;
@@ -43,7 +43,7 @@ function MinimalisticWebSocketLights(log, config) {
     this.init_service();
 }
 
-MinimalisticWebSocketLights.prototype.callBack = function(value) {
+WebSocketLights.prototype.callBack = function(value) {
     //function that gets called by the registered ws listener
     //console.log("Got new state for blind " + value);
     this.state = parseInt(value);
@@ -60,7 +60,7 @@ MinimalisticWebSocketLights.prototype.callBack = function(value) {
         }.bind(this));
 };
 
-MinimalisticWebSocketLights.prototype.init_service = function() {
+WebSocketLights.prototype.init_service = function() {
     this.service = new Service.Lightbulb(this.name);
 
     this.ws.on('message', function incoming(data) {  
@@ -87,15 +87,15 @@ MinimalisticWebSocketLights.prototype.init_service = function() {
     }.bind(this));
 };
 
-MinimalisticWebSocketLights.prototype.getLightState = function(callback) {
+WebSocketLights.prototype.getLightState = function(callback) {
     callback(undefined, this.state);
 };
 
-MinimalisticWebSocketLights.prototype.getLightPowerState = function(callback) {
+WebSocketLights.prototype.getLightPowerState = function(callback) {
     callback(undefined, this.state > 0);
 };
 
-MinimalisticWebSocketLights.prototype.setLightState = function(value, callback) {
+WebSocketLights.prototype.setLightState = function(value, callback) {
 
     //sending new state (pct closed) to app
     //added some logic to prevent a loop when the change because of external event captured by callback
@@ -119,7 +119,7 @@ MinimalisticWebSocketLights.prototype.setLightState = function(value, callback) 
     callback();
 };
 
-MinimalisticWebSocketLights.prototype.setLightPowerState = function(value, callback) {
+WebSocketLights.prototype.setLightPowerState = function(value, callback) {
     //sending new state (pct closed) to app
     //added some logic to prevent a loop when the change because of external event captured by callback
     var self = this;
@@ -141,6 +141,6 @@ MinimalisticWebSocketLights.prototype.setLightPowerState = function(value, callb
     callback();
 }
 
-MinimalisticWebSocketLights.prototype.getServices = function() {
+WebSocketLights.prototype.getServices = function() {
     return [this.service];
 };

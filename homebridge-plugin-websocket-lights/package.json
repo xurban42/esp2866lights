@@ -1,10 +1,10 @@
 {
-  "name": "homebridge-minimal-websocket-lights",
-  "description": "Minimalistic websocket lights management *that supports percentages* for diy-ish projects.",
+  "name": "homebridge-esp2866-websocket-lights",
+  "description": "Minimalistic websocket lights management *that supports percentages* for esp2866 project (https://github.com/xurban42/esp2866lights/blob/master/esp2866-ws-lights-server/lights/lights.ino).",
   "version": "0.0.15",
   "repository": {
     "type": "git",
-    "url": "git://github.com/Nicnl/homebridge-minimal-websocket-lights.git"
+    "url": "https://github.com/xurban42/esp2866lights.git"
   },
   "scripts": {
     "test": "cp -f ./index.js /Users/xurban42/.nvm/versions/node/v7.10.1/lib/node_modules/homebridge-plugin-websocket-lights/; homebridge"
