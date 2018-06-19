@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+    <meta http-equiv="Pragma" content="no-cache"/>
+    <meta http-equiv="Expires" content="0"/>
+    <title>{NAME}</title>
+    <link rel="stylesheet" href="https://unpkg.com/onsenui/css/onsenui.css">
+    <link rel="stylesheet" href="https://unpkg.com/onsenui/css/onsen-css-components.min.css">
+    <script src="https://unpkg.com/onsenui/js/onsenui.min.js">
+</script>
+    <script src="https://unpkg.com/jquery/dist/jquery.min.js">
+</script>
+    <script>
+    var cversion="{VERSION}";
+    var wsUri="ws://lights.local:81/";
+    var repo="esp8266blinds";
+    window.fn={};
+    window.fn.open=function(){
+        var menu=document.getElementById('menu');
+        menu.open();
+    };
+    window.fn.load=function(page){
+        var content=document.getElementById('content');
+        var menu=document.getElementById('menu');
+        content.load(page) .then(menu.close.bind(menu)).then(setActions());
+    };
+    var gotoPos=function(percent, pin){
+        doSend('(' + pin + ')' + percent);
+    };
+    var setActions=function(){
+        doSend("(update-d2)");
+        doSend("(update-d3)");
+        $.get("https://github.com/xurban42/esp8266blinds/releases", function(data){if (data.length>0 && data[0].tag_name !==cversion){$("#cversion").text(cversion);
+        $("#nversion").text(data[0].tag_name);
+        $("#update-card").show();}});
+        setTimeout(function(){
+            $("#light-on-d2").on("click", function(){$("#setrange-d2").val(100); gotoPos(100, 'd2');});
+            $("#light-off-d2").on("click", function(){$("#setrange-d2").val(0); gotoPos(0, 'd2');});
+            $("#setrange-d2").on("change", function(){gotoPos($("#setrange-d2").val(), 'd2')});
+
+            $("#light-on-d3").on("click", function(){$("#setrange-d3").val(100); gotoPos(100, 'd3');});
+            $("#light-off-d3").on("click", function(){$("#setrange-d3").val(0); gotoPos(0, 'd3');});
+            $("#setrange-d3").on("change", function(){gotoPos($("#setrange-d3").val(), 'd3')});
+        }, 200);
+    };
+    $(document).ready(function(){setActions();});
+    var websocket;
+    var timeOut;
+    function retry(){
+        clearTimeout(timeOut);
+        timeOut=setTimeout(function(){
+            websocket=null;
+            init();
+        }, 5000);
+    };
+    
+    function init(){ons.notification.toast({message: 'Connecting...', timeout: 1000});
+    try {
+        websocket=new WebSocket(wsUri);
+        websocket.onclose=function (){};
+        websocket.onerror=function(evt){
+            ons.notification.toast({message: 'Cannot connect to device', timeout: 2000});
+            retry();
+        };
+        websocket.onopen=function(evt){
+            ons.notification.toast({message: 'Connected to device', timeout: 2000});
+            setTimeout(function(){
+                doSend("(update-d2)");
+                doSend("(update-d3)");
+            }, 1000);
+        };
+        websocket.onclose=function(evt){
+            ons.notification.toast({message: 'Disconnected. Retrying', timeout: 2000});
+            retry();
+        };
+        websocket.onmessage=function(evt){
+            try{
+                var msg=JSON.parse(evt.data);
+                if (typeof msg.lightState.d2 !=='undefined'){
+                    $("#setrange-d2").val(msg.lightState.d2);
+                };
+                if (typeof msg.lightState.d3 !=='undefined'){
+                    $("#setrange-d3").val(msg.lightState.d3);
+                };
+            }catch(err){}
+        };
+    }catch (e){
+        ons.notification.toast({message: 'Cannot connect to device. Retrying...', timeout: 2000});
+            retry();
+        };
+    };
+    function doSend(msg){
+        if (websocket && websocket.readyState==1){
+            websocket.send(msg);
+        }
+    };
+    window.addEventListener("load", init, false);
+    window.onbeforeunload=function(){
+        if (websocket && websocket.readyState==1){
+            websocket.close();
+        };
+    };
+    </script>
+</head>
+<body>
+    <ons-splitter>
+    <ons-splitter-side id="menu" side="left" width="220px" collapse swipeable>
+    <ons-page>
+    <ons-list>
+    <ons-list-item onclick="fn.load('home.html')" tappable> Home </ons-list-item>
+    <ons-list-item onclick="fn.load('settings.html')" tappable> Settings </ons-list-item>
+    <ons-list-item onclick="fn.load('about.html')" tappable> About </ons-list-item>
+</ons-list>
+</ons-page>
+</ons-splitter-side>
+    <ons-splitter-content id="content" page="home.html">
+
+</ons-splitter-content>
+</ons-splitter>
+    <template id="home.html">
+    <ons-page>
+    <ons-toolbar>
+    <div class="left">
+    <ons-toolbar-button onclick="fn.open()">
+    <ons-icon icon="md-menu">
+
+</ons-icon>
+</ons-toolbar-button>
+</div>
+    <div class="center">{NAME}</div>
+</ons-toolbar>
+    <ons-card>
+    <div class="title">Adjust lights</div>
+    <div class="content">
+    <p>Move the slider to the wanted position or use the circles to turn on/off lights</p>
+</div>
+    <ons-row>
+    <ons-col width="40px" style="text-align: center;
+    line-height: 31px;">
+
+    </ons-col>
+        <ons-col>
+    </ons-col>
+        <ons-col width="40px" style="text-align: center;
+        line-height: 31px;">
+
+    </ons-col>
+</ons-row>
+    <ons-row>
+    <ons-col width="40px" style="text-align: center;
+    line-height: 31px;">
+    <ons-icon id="light-off-d2" style="color:gray" icon="fa-circle" size="2x">
+
+</ons-icon>
+</ons-col>
+    <ons-col>
+    <ons-range id="setrange-d2" style="width: 100%;" value="25">
+
+</ons-range>
+</ons-col>
+    <ons-col width="40px" style="text-align: center;
+    line-height: 31px;">
+    <ons-icon id="light-on-d2" style="color:orange" icon="fa-circle" size="2x">
+
+</ons-icon>
+</ons-col>
+</ons-row>
+<ons-row>
+        <ons-col width="40px" style="text-align: center;
+        line-height: 31px;">
+        <ons-icon id="light-off-d3" style="color:gray" icon="fa-circle" size="2x">
+    
+    </ons-icon>
+    </ons-col>
+        <ons-col>
+        <ons-range id="setrange-d3" style="width: 100%;" value="25">
+    
+    </ons-range>
+    </ons-col>
+        <ons-col width="40px" style="text-align: center;
+        line-height: 31px;">
+        <ons-icon id="light-on-d3" style="color:orange" icon="fa-circle" size="2x">
+    
+    </ons-icon>
+    </ons-col>
+    </ons-row>
+</ons-card>
+    <ons-card id="update-card" style="display:none">
+    <div class="title">Update available</div>
+    <div class="content">You are running <span id="cversion">
+
+</span> and <span id="nversion">
+
+</span> is the latest. Go to <a href="https://github.com/xurban42/esp8266blinds/releases">the repo</a> to download</div>
+</ons-card>
+</ons-page>
+</template>
+    <template id="settings.html">
+    <ons-page>
+    <ons-toolbar>
+    <div class="left">
+    <ons-toolbar-button onclick="fn.open()">
+    <ons-icon icon="md-menu">
+
+</ons-icon>
+</ons-toolbar-button>
+</div>
+    <div class="center"> Settings </div>
+</ons-toolbar>
+</ons-page>
+</template>
+    <template id="about.html">
+    <ons-page>
+    <ons-toolbar>
+    <div class="left">
+    <ons-toolbar-button onclick="fn.open()">
+    <ons-icon icon="md-menu">
+
+</ons-icon>
+</ons-toolbar-button>
+</div>
+    <div class="center"> About </div>
+</ons-toolbar>
+    <ons-card>
+    <div class="title">Lights Homebridge (ws/http)</div>
+    <div class="content">
+    <p>
+    <ul>
+        <li>Licensed unnder <a href="https://creativecommons.org/licenses/by/3.0/">Creative Commons</a>
+    </li>
+</ul>
+</p>
+</div>
+</ons-card>
+</ons-page>
+</template>
+</body>
+</html>

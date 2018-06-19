@@ -1,0 +1,25 @@
+{
+  "name": "homebridge-minimal-websocket-lights",
+  "description": "Minimalistic websocket lights management *that supports percentages* for diy-ish projects.",
+  "version": "0.0.15",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/Nicnl/homebridge-minimal-websocket-lights.git"
+  },
+  "scripts": {
+    "test": "cp -f ./index.js /Users/xurban42/.nvm/versions/node/v7.10.1/lib/node_modules/homebridge-plugin-websocket-lights/; homebridge"
+  },
+  "license": "ISC",
+  "keywords": [
+    "homebridge-plugin"
+  ],
+  "engines": {
+    "node": ">=0.12.0",
+    "homebridge": ">=0.2.5"
+  },
+  "dependencies": {
+    "request": "^2.81.0",
+    "ws": "^4.0.0",
+    "ws-reconnect": "^1.0.5"
+  }
+}
